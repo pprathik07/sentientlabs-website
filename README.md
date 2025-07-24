@@ -1,16 +1,98 @@
-<<<<<<< HEAD
-# React + Vite
+# SentientLabs Website
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, responsive React website for SentientLabs—built for automation-first lead generation, modern agencies, and scalable AI solutions.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Project Overview
 
-## Expanding the ESLint configuration
+SentientLabs provides intelligent, cost-effective automation systems for marketing agencies and SMBs. This project features:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-=======
-# sentientlabs-website
->>>>>>> e910127b170e8ba6a445cfd211f981e136001717
+- Automated lead qualification and funnel building
+- Interactive, mobile-friendly UI with animations
+- Team member bios and direct contact actions
+- Seamless CTAs with email and phone support
+- Social media and professional integrations
+
+---
+
+## 🛠️ Tech Stack
+
+- **React** – UI Components
+- **Vite** – Fast dev/build tooling
+- **Tailwind CSS** – Utility-first responsive styling
+- **Framer Motion** – Modern animation library
+- **Lucide React** – Icon set
+- **GSAP** – Advanced section animation
+- **Git & GitHub** – Version control & collaboration
+
+---
+
+## 📦 Getting Started
+
+### Prerequisites
+
+- Node.js (v16+)
+- npm or yarn
+
+### Installation
+
+git clone https://github.com/pprathik07/sentientlabs-website.git
+cd sentientlabs-website
+npm install
+
+or
+yarn install
+
+text
+
+### Development
+
+npm run dev
+
+or
+yarn dev
+
+Visit localhost
+
+---
+
+## 📱 Responsive Design
+
+Built mobile-first, the layout adapts smoothly from tiny phones to large screens.  
+No UI breakage, with optimal usability and accessibility at every viewport.
+
+---
+
+## ✨ Features
+
+- **Smart navigation** with responsive burger menu and contact section
+- **Animated hero** with custom cursor and motion effects
+- **Team cards** with direct phone and LinkedIn links
+- **Service explanations** in responsive, accessible cards
+- **Interactive CTAs** for instant outreach
+- **Social links** to all SentientLabs platforms
+- **Touch-friendly & accessible** for all devices
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Open issues or PRs for improvements or bugfixes.
+
+---
+
+## 📜 License
+
+MIT License
+
+---
+
+## 📞 Contact
+
+- Email: hello@sentientlabs.in
+- LinkedIn: https://www.linkedin.com/company/sentienlabsai/
+
+---
+
+*Helping agencies automate and scale, the smart way.*
