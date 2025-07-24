@@ -76,12 +76,6 @@ No UI breakage, with optimal usability and accessibility at every viewport.
 
 ---
 
-## 🤝 Contributing
-
-Contributions are welcome! Open issues or PRs for improvements or bugfixes.
-
----
-
 ## 📜 License
 
 MIT License
@@ -91,7 +85,6 @@ MIT License
 ## 📞 Contact
 
 - Email: hello@sentientlabs.in
-- LinkedIn: https://www.linkedin.com/company/sentienlabsai/
 
 ---
 
