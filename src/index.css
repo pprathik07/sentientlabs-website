@@ -1,0 +1,114 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@font-face {
+  font-family: 'Gilroy';
+  src: url('/src/assets/fonts/Gilroy-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Gilroy', system-ui, sans-serif;
+  background: linear-gradient(180deg, #111 0%, #0c091c 20%, #100e26 100%);
+  color: white;
+  overflow-x: hidden;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, rgba(122, 99, 255, 0.6), rgba(122, 99, 255, 0.3));
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, rgba(122, 99, 255, 0.8), rgba(122, 99, 255, 0.5));
+}
+
+/* Smooth Animations */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Professional Button Styles */
+.btn-primary {
+  background: linear-gradient(135deg, #7a63ff, #6366f1);
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(122, 99, 255, 0.4);
+}
+
+/* Custom Cursor Styles */
+.cursor-none * {
+  cursor: none !important;
+}
+
+/* Hide default cursor on interactive elements when custom cursor is active */
+.cursor-none a,
+.cursor-none button,
+.cursor-none [data-cursor="pointer"] {
+  cursor: none !important;
+}
+
+/* Ensure cursor elements are above everything */
+.cursor-element {
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+}
+
+
+/* -------------------------------- GLOBAL RESPONSIVE HELPERS ------------------------------- */
+
+/* 1️⃣ Typography fluid-scale ( clamps between 320 px and 1536 px ) */
+:root{
+  --step--2: clamp(0.69rem, 0.64rem + 0.18vw, 0.80rem);
+  --step--1: clamp(0.83rem, 0.77rem + 0.22vw, 0.96rem);
+  --step-0 : clamp(1.00rem, 0.90rem + 0.27vw, 1.20rem);
+  --step-1 : clamp(1.20rem, 1.06rem + 0.33vw, 1.50rem);
+  --step-2 : clamp(1.44rem, 1.28rem + 0.40vw, 1.88rem);
+  --step-3 : clamp(1.73rem, 1.54rem + 0.48vw, 2.34rem);
+  --step-4 : clamp(2.07rem, 1.85rem + 0.58vw, 2.93rem);
+  --step-5 : clamp(2.49rem, 2.22rem + 0.69vw, 3.66rem);
+}
+/* helper classes */
+.text-fluid   { font-size: var(--step-1); }
+.text-fluid-2 { font-size: var(--step-3); }
+.text-fluid-3 { font-size: var(--step-5); }
+
+/* 2️⃣ Disable custom cursor on touch / stylus devices */
+@media (hover:none),(pointer:coarse){
+  .hide-touch { display:none!important; }
+}
