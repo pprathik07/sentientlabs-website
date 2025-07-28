@@ -1,4 +1,3 @@
-// src/components/Services.jsx
 import { motion } from 'framer-motion'
 import {
   ArrowRight,
@@ -50,7 +49,6 @@ const Services = () => {
   return (
     <section id="challenges" className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-gray-900">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <motion.div
           className="text-center mb-8 sm:mb-12 lg:mb-16"
           initial={{ opacity: 0, y: 30 }}
@@ -69,7 +67,6 @@ const Services = () => {
           </p>
         </motion.div>
 
-        {/* Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12">
           {challenges.map((c, i) => (
             <motion.div
@@ -80,12 +77,10 @@ const Services = () => {
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
             >
-              {/* Accent Bar */}
               <div
                 className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${c.color} scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300`}
               />
 
-              {/* Emoji + Icon */}
               <div className="flex items-center mb-4">
                 <span className="text-2xl sm:text-3xl mr-3">{c.emoji}</span>
                 <div
@@ -95,7 +90,6 @@ const Services = () => {
                 </div>
               </div>
 
-              {/* Text */}
               <h3 className="text-lg sm:text-xl font-semibold text-white mb-2 transition-colors group-hover:text-red-400">
                 {c.title}
               </h3>
@@ -106,7 +100,6 @@ const Services = () => {
           ))}
         </div>
 
-        {/* CTA */}
         <motion.div
           className="text-center"
           initial={{ opacity: 0, y: 20 }}

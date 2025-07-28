@@ -1,63 +1,54 @@
-import { useEffect, useRef } from 'react'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import Navigation from './components/Navigation'
-import Hero from './components/Hero'
-import Services from './components/Services'
-import About from './components/About'
-import Process from './components/Process'
-import Trust from './components/Trust'
-import Team from './components/Team'
-import CTA from './components/CTA'
-import Footer from './components/Footer'
+import React, { Suspense, lazy } from 'react'
+import Navigation from './components/Navigation.jsx'
+import CustomCursor from './components/CustomCursor.jsx'
+import './App.css'
 
-gsap.registerPlugin(ScrollTrigger)
+const Hero = lazy(() => import('./components/Hero.jsx'))
+const About = lazy(() => import('./components/About.jsx'))
+const Services = lazy(() => import('./components/Services.jsx'))
+const Trust = lazy(() => import('./components/Trust.jsx'))
+const Process = lazy(() => import('./components/Process.jsx'))
+const Team = lazy(() => import('./components/Team.jsx'))
+const CTA = lazy(() => import('./components/CTA.jsx'))
+const Footer = lazy(() => import('./components/Footer.jsx'))
+
+const LoadingFallback = () => (
+  <div 
+    className="flex items-center justify-center min-h-screen bg-black"
+    role="status"
+    aria-label="Loading page content"
+  >
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+    <span className="sr-only">Loading...</span>
+  </div>
+)
 
 function App() {
-  const appRef = useRef(null)
-
-  useEffect(() => {
-    // Global animations
-    const sections = gsap.utils.toArray('.section-reveal')
-    
-    sections.forEach((section, index) => {
-      gsap.fromTo(section, 
-        {
-          y: 100,
-          opacity: 0,
-        },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 1.2,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: section,
-            start: "top 80%",
-            end: "bottom 20%",
-            toggleActions: "play none none reverse",
-          }
-        }
-      )
-    })
-
-    return () => {
-      ScrollTrigger.getAll().forEach(trigger => trigger.kill())
-    }
-  }, [])
-
   return (
-    <div ref={appRef} className="min-h-screen">
+    <>
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
+      
+      <CustomCursor />
       <Navigation />
-      <Hero />
-      <Services />
-      <About />
-      <Process />
-      <Trust />
-      <Team />
-      <CTA />
-      <Footer />
-    </div>
+      
+      <main id="main-content" tabIndex="-1">
+        <Suspense fallback={<LoadingFallback />}>
+          <Hero />
+          <About />
+          <Services />
+          <Trust />
+          <Process />
+          <Team />
+          <CTA />
+        </Suspense>
+      </main>
+      
+      <Suspense fallback={<LoadingFallback />}>
+        <Footer />
+      </Suspense>
+    </>
   )
 }
 
