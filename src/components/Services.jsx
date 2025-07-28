@@ -71,28 +71,43 @@ const Services = () => {
           {challenges.map((c, i) => (
             <motion.div
               key={i}
-              className="relative flex flex-col p-4 sm:p-6 bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300 group xl:col-span-1"
+              className="relative flex flex-col p-4 sm:p-6 bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm border border-white/10 rounded-2xl shadow-lg xl:col-span-1"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
+              whileHover={{
+                scale: 1.02,
+                boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1)"
+              }}
             >
-              <div
-                className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${c.color} scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300`}
+              <motion.div
+                className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${c.color}`}
+                initial={{ scaleX: 0 }}
+                whileHover={{ scaleX: 1 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                style={{ transformOrigin: "left" }}
               />
 
               <div className="flex items-center mb-4">
                 <span className="text-2xl sm:text-3xl mr-3">{c.emoji}</span>
-                <div
-                  className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-lg bg-gradient-to-br ${c.color} text-white transition-transform duration-300 group-hover:scale-110`}
+                <motion.div
+                  className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-lg bg-gradient-to-br ${c.color} text-white`}
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
                 >
                   <c.icon className="w-5 h-5 sm:w-6 sm:h-6" />
-                </div>
+                </motion.div>
               </div>
 
-              <h3 className="text-lg sm:text-xl font-semibold text-white mb-2 transition-colors group-hover:text-red-400">
+              <motion.h3
+                className="text-lg sm:text-xl font-semibold text-white mb-2"
+                whileHover={{ color: "#f87171" }}
+                transition={{ duration: 0.2 }}
+              >
                 {c.title}
-              </h3>
+              </motion.h3>
+              
               <p className="text-sm sm:text-base text-gray-300 leading-relaxed flex-grow">
                 {c.description}
               </p>
@@ -112,9 +127,13 @@ const Services = () => {
           </h3>
           <motion.a
             href="#services"
-            className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-primary to-purple-600 text-white text-base sm:text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
-            whileHover={{ scale: 1.05 }}
+            className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-primary to-purple-600 text-white text-base sm:text-lg font-semibold rounded-full shadow-lg"
+            whileHover={{ 
+              scale: 1.05,
+              boxShadow: "0 20px 25px -5px rgba(122, 99, 255, 0.4), 0 10px 10px -5px rgba(122, 99, 255, 0.2)"
+            }}
             whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
             See Our Solution
             <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />

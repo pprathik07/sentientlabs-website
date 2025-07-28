@@ -25,7 +25,7 @@ const Team = () => {
       id: 'krish-dubey',
       emoji: "👨‍💼",
       name: "Krish Dubey",
-      position: "Co-Founder & CEO",
+      position: "Founder & CEO",
       bio: "Vision. Sales. Relentless execution.",
       image: "/src/assets/images/krish_dubey_pfp.jpeg",
       phone: "+918788775779",
@@ -160,11 +160,107 @@ const Team = () => {
     <section 
       ref={sectionRef} 
       id="team" 
-      className="section-reveal py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8"
+      className="section-reveal py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden"
+      style={{
+        background: `
+          radial-gradient(circle at 20% 80%, rgba(122, 99, 255, 0.15) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(168, 85, 247, 0.12) 0%, transparent 50%),
+          radial-gradient(circle at 40% 40%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+          linear-gradient(135deg, rgba(15, 13, 36, 0.98) 0%, rgba(30, 27, 75, 0.95) 50%, rgba(15, 13, 36, 1) 100%)
+        `
+      }}
       aria-labelledby="team-heading"
       role="region"
     >
-      <div className="max-w-7xl mx-auto">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Floating Orbs */}
+        <motion.div
+          className="absolute top-20 left-10 w-32 h-32 bg-primary/5 rounded-full blur-xl"
+          animate={prefersReducedMotion ? {} : {
+            y: [0, -20, 0],
+            scale: [1, 1.1, 1],
+            opacity: [0.3, 0.6, 0.3]
+          }}
+          transition={prefersReducedMotion ? {} : {
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        
+        <motion.div
+          className="absolute bottom-32 right-16 w-24 h-24 bg-purple-500/5 rounded-full blur-xl"
+          animate={prefersReducedMotion ? {} : {
+            y: [0, 15, 0],
+            scale: [1, 1.2, 1],
+            opacity: [0.2, 0.5, 0.2]
+          }}
+          transition={prefersReducedMotion ? {} : {
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2
+          }}
+        />
+
+        <motion.div
+          className="absolute top-1/2 left-1/2 w-40 h-40 bg-blue-500/4 rounded-full blur-2xl"
+          animate={prefersReducedMotion ? {} : {
+            rotate: [0, 360],
+            scale: [1, 1.3, 1]
+          }}
+          transition={prefersReducedMotion ? {} : {
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        />
+
+        {/* Grid Pattern Overlay */}
+        <div 
+          className="absolute inset-0 opacity-[0.02]"
+          style={{
+            backgroundImage: `
+              linear-gradient(rgba(122, 99, 255, 0.3) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(122, 99, 255, 0.3) 1px, transparent 1px)
+            `,
+            backgroundSize: '50px 50px'
+          }}
+        />
+
+        {/* Animated Lines */}
+        <motion.div
+          className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent"
+          animate={prefersReducedMotion ? {} : {
+            scaleX: [0, 1, 0],
+            opacity: [0, 1, 0]
+          }}
+          transition={prefersReducedMotion ? {} : {
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut",
+            repeatDelay: 2
+          }}
+        />
+
+        <motion.div
+          className="absolute bottom-0 right-0 w-full h-px bg-gradient-to-l from-transparent via-purple-500/20 to-transparent"
+          animate={prefersReducedMotion ? {} : {
+            scaleX: [0, 1, 0],
+            opacity: [0, 1, 0]
+          }}
+          transition={prefersReducedMotion ? {} : {
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 4,
+            repeatDelay: 2
+          }}
+        />
+      </div>
+
+      <div className="max-w-7xl mx-auto relative z-10">
         
         {/* Section Header */}
         <motion.div 
@@ -173,7 +269,7 @@ const Team = () => {
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
         >
-          <div className="inline-block px-4 py-2 bg-primary/10 border border-primary/30 rounded-full text-primary text-sm font-semibold mb-6">
+          <div className="inline-block px-4 py-2 bg-primary/10 border border-primary/30 rounded-full text-primary text-sm font-semibold mb-6 backdrop-blur-sm">
             <span className="flex items-center gap-2">
               <Users className="w-3 h-3" aria-hidden="true" />
               OUR TEAM
@@ -202,10 +298,12 @@ const Team = () => {
           {teamMembers.map((member, index) => (
             <motion.article
               key={member.id}
-              className="group text-center relative"
+              className="group text-center relative backdrop-blur-sm bg-white/5 rounded-3xl p-6 border border-white/10"
               variants={cardVariants}
               whileHover={prefersReducedMotion ? {} : { 
                 y: -6,
+                scale: 1.02,
+                boxShadow: "0 20px 40px rgba(122, 99, 255, 0.15)",
                 transition: { duration: 0.2, ease: "easeOut" }
               }}
               aria-labelledby={`member-${member.id}-name`}
@@ -330,7 +428,7 @@ const Team = () => {
             ease: "easeOut"
           }}
         >
-          <div className="inline-block px-4 sm:px-6 lg:px-8 py-3 sm:py-4 bg-gradient-to-r from-primary/10 to-purple-600/10 border border-primary/30 rounded-2xl">
+          <div className="inline-block px-4 sm:px-6 lg:px-8 py-3 sm:py-4 bg-gradient-to-r from-primary/10 to-purple-600/10 border border-primary/30 rounded-2xl backdrop-blur-sm">
             <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-white">
               Ready to meet the team that will transform your business? 
               <span className="text-primary"> Let's talk.</span>
