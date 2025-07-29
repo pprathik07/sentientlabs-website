@@ -1,17 +1,18 @@
-SentientLabs Website
+## SentientLabs Website
+
 A high-performance, modern React website for SentientLabs—the next-generation lead generation agency specializing in AI-powered automation and scalable growth solutions.
 
-1.About SentientLabs
+# 1.About SentientLabs
 SentientLabs delivers cutting-edge lead generation services with blazing-fast performance, intelligent automation, and data-driven results. Our platform combines advanced AI technology with proven marketing strategies to help agencies and businesses scale efficiently.
-Key Offerings:
 
-Automated lead qualification and nurturing systems
+# Key Offerings:
+# 1. Automated lead qualification and nurturing systems
 AI-powered funnel optimization
 Scalable marketing automation for agencies
 Data-driven growth solutions for SMBs
 
 
-2. Tech Stack
+# 2. Tech Stack
 
 React 18 – Modern component architecture
 Vite – Lightning-fast build tooling
@@ -22,7 +23,7 @@ GSAP – Advanced scroll-triggered animations
 Critical CSS Optimization – Sub-second load times
 
 
-3. Performance Metrics
+# 3. Performance Metrics
 
 Lighthouse Score: 97/100 (Desktop)
 Mobile Score: 70/100 (Above industry average)
@@ -32,7 +33,7 @@ CLS: 0 – Perfect layout stability
 Speed Index: 1.4s – Visual completeness
 
 
-4. Getting Started
+# 4. Getting Started
 Prerequisites
 
 Node.js (v18+ recommended)
@@ -49,7 +50,7 @@ Production Build
 bashnpm run build
 npm run preview
 
-5. Key Features
+# 5. Key Features
 🎯 Performance Optimized
 
 Critical CSS inlining for instant rendering
@@ -79,9 +80,8 @@ TypeScript-ready structure
 Comprehensive error handling
 
 
-🌐 Deployment
+# 🌐 Deployment
 This application is optimized for:
-
 Vercel (Recommended)
 Netlify
 GitHub Pages
@@ -115,7 +115,7 @@ Email: hello@sentientlabs.in
 LinkedIn: SentientLabs
 
 
-Development:
+# Development:
 Developed by Prathik - Chief Technology Officer, SentientLabs
 Engineered for performance, built for scale, designed for results.
 
