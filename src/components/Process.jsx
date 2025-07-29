@@ -1,243 +1,288 @@
-import { useRef, useMemo } from 'react'
-import { motion, useInView } from 'framer-motion'
-import { Lightbulb, Rocket, RotateCcw, Zap } from 'lucide-react'
+import { useRef, useMemo, useCallback, useState, useEffect } from 'react'
+import { Lightbulb, Rocket, RotateCcw, Zap, ArrowRight } from 'lucide-react'
 
-// Custom hook for reduced motion preference
+// Lightweight reduced motion hook
 const usePrefersReducedMotion = () => {
-  return typeof window !== 'undefined' 
-    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    : false
+  const [prefersReduced, setPrefersReduced] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    
+    try {
+      const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+      setPrefersReduced(mediaQuery.matches)
+      
+      const handleChange = (e) => setPrefersReduced(e.matches)
+      mediaQuery.addEventListener('change', handleChange)
+      return () => mediaQuery.removeEventListener('change', handleChange)
+    } catch (error) {
+      setPrefersReduced(true) // Safe fallback
+    }
+  }, [])
+
+  return prefersReduced
 }
 
+// Optimized intersection observer hook
+const useIntersectionObserver = (threshold = 0.2, rootMargin = '50px') => {
+  const [isVisible, setIsVisible] = useState(false)
+  const ref = useRef(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+          observer.unobserve(entry.target)
+        }
+      })
+    }, { threshold, rootMargin })
+
+    if (ref.current) observer.observe(ref.current)
+    return () => observer.disconnect()
+  }, [threshold, rootMargin])
+
+  return [ref, isVisible]
+}
+
+// Memoized process step card component
+const ProcessStepCard = ({ step, index, isVisible, prefersReducedMotion }) => {
+  const [isHovered, setIsHovered] = useState(false)
+  
+  const handleMouseEnter = useCallback(() => setIsHovered(true), [])
+  const handleMouseLeave = useCallback(() => setIsHovered(false), [])
+
+  return (
+    <article
+      className={`group relative h-full transition-all duration-500 transform ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      } ${!prefersReducedMotion && isHovered ? 'scale-105' : ''}`}
+      style={{ 
+        transitionDelay: isVisible ? `${index * 100}ms` : '0ms'
+      }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      role="article"
+      aria-labelledby={`step-${index + 1}-title`}
+    >
+      {/* Step Number */}
+      <div 
+        className="absolute -top-3 -left-3 w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg z-10 border-2 border-gray-900"
+        role="img"
+        aria-label={`Step ${index + 1}`}
+      >
+        {index + 1}
+      </div>
+
+      {/* Card Container */}
+      <div className="h-full p-8 bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl hover:border-blue-500 hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-500">
+        
+        {/* Icon Container */}
+        <div 
+          className={`w-16 h-16 bg-gradient-to-br ${step.gradient} rounded-xl flex items-center justify-center mb-6 shadow-lg ${
+            !prefersReducedMotion && isHovered ? 'scale-110' : ''
+          } transition-transform duration-300`}
+          aria-hidden="true"
+        >
+          <step.icon className="w-8 h-8 text-white" strokeWidth={2} />
+        </div>
+
+        {/* Content */}
+        <div className="space-y-4">
+          <header>
+            <h3 
+              id={`step-${index + 1}-title`}
+              className="text-2xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors duration-300"
+            >
+              {step.title}
+            </h3>
+            <h4 className="text-lg font-semibold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-3">
+              {step.subtitle}
+            </h4>
+          </header>
+          
+          <p className="text-gray-300 leading-relaxed">
+            {step.description}
+          </p>
+        </div>
+
+        {/* Connecting Arrow */}
+        {index < 2 && (
+          <div className="hidden lg:block absolute top-1/2 -right-6 transform -translate-y-1/2 z-10">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+              <ArrowRight className="w-6 h-6 text-white" strokeWidth={2} />
+            </div>
+          </div>
+        )}
+      </div>
+    </article>
+  )
+}
+
+// Header component
+const ProcessHeader = ({ isVisible, prefersReducedMotion }) => (
+  <header 
+    className={`text-center mb-16 transition-all duration-1000 ${
+      isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+    }`}
+  >
+    <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600/20 backdrop-blur-sm border border-blue-500/30 rounded-full text-blue-400 text-sm font-semibold mb-6">
+      <Zap className="w-4 h-4" aria-hidden="true" />
+      HOW IT WORKS
+    </div>
+    
+    <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">
+      Plan →{' '}
+      <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 bg-clip-text text-transparent">
+        Build
+      </span>{' '}
+      → Manage
+    </h2>
+    
+    <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+      Zero Manual Effort. Maximum ROI.
+    </p>
+  </header>
+)
+
+// CTA component
+const ProcessCTA = ({ isVisible, prefersReducedMotion }) => (
+  <footer
+    className={`text-center transition-all duration-1000 ${
+      isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+    }`}
+    style={{ transitionDelay: '600ms' }}
+  >
+    <div className="inline-block p-8 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 rounded-2xl shadow-2xl">
+      <h3 className="text-2xl font-bold text-white mb-4">
+        Simple process.{' '}
+        <span className="text-blue-100">Extraordinary results.</span>
+      </h3>
+      <p className="text-blue-100 mb-6 max-w-md mx-auto">
+        Ready to automate your agency's growth? Let's build your custom solution.
+      </p>
+      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <a 
+          href="tel:+918788775779" 
+          className="px-8 py-3 bg-white text-blue-600 rounded-xl font-semibold hover:bg-gray-100 hover:scale-105 transition-all duration-300 shadow-lg"
+        >
+          Start Your Automation
+        </a>
+        <a 
+          href="mailto:hello@sentientlabs.in" 
+          className="px-8 py-3 border-2 border-white text-white rounded-xl font-semibold hover:bg-white hover:text-blue-600 hover:scale-105 transition-all duration-300"
+        >
+          Get Free Consultation
+        </a>
+      </div>
+    </div>
+  </footer>
+)
+
+// Main Process component
 const Process = () => {
-  const sectionRef = useRef(null)
-  const isInView = useInView(sectionRef, { 
-    once: true, 
-    threshold: 0.1,
-    margin: "-10% 0px -10% 0px"
-  })
+  const [headerRef, isHeaderVisible] = useIntersectionObserver(0.5)
+  const [gridRef, isGridVisible] = useIntersectionObserver(0.2)
+  const [ctaRef, isCtaVisible] = useIntersectionObserver(0.3)
   const prefersReducedMotion = usePrefersReducedMotion()
 
-  // Memoized process steps to prevent unnecessary re-renders
+  // Process steps data
   const processSteps = useMemo(() => [
     {
       icon: Lightbulb,
       title: "Plan",
       subtitle: "Custom Automation Blueprint",
       description: "We reverse-engineer your dream client's journey and map every step with AI logic.",
-      color: "from-blue-500 to-blue-600",
-      ariaLabel: "Step 1: Plan - Create custom automation blueprint"
+      gradient: "from-blue-500 to-blue-600",
+      delay: 0
     },
     {
       icon: Rocket,
-      title: "Build",
+      title: "Build", 
       subtitle: "End-to-End Deployment",
       description: "Our team integrates tools, writes the copy, trains the bots, and automates your outreach.",
-      color: "from-green-500 to-green-600",
-      ariaLabel: "Step 2: Build - Deploy end-to-end automation"
+      gradient: "from-green-500 to-green-600",
+      delay: 100
     },
     {
       icon: RotateCcw,
       title: "Manage",
-      subtitle: "Continuous Optimization",
+      subtitle: "Continuous Optimization", 
       description: "We monitor, tweak, and scale every automation so it keeps getting smarter.",
-      color: "from-purple-500 to-purple-600",
-      ariaLabel: "Step 3: Manage - Continuously optimize performance"
+      gradient: "from-purple-500 to-purple-600",
+      delay: 200
     }
   ], [])
 
-  // Optimized animation variants
-  const fadeInUp = useMemo(() => prefersReducedMotion ? {} : {
-    hidden: { 
-      opacity: 0, 
-      y: 30,
-      transition: { duration: 0.3 }
-    },
-    visible: { 
-      opacity: 1, 
-      y: 0, 
-      transition: { 
-        duration: 0.6,
-        ease: [0.25, 0.1, 0.25, 1.0]
-      }
-    }
-  }, [prefersReducedMotion])
-
-  const staggerContainer = useMemo(() => prefersReducedMotion ? {} : {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
-  }, [prefersReducedMotion])
-
-  const cardVariants = useMemo(() => prefersReducedMotion ? {} : {
-    hidden: { 
-      opacity: 0, 
-      y: 25,
-      scale: 0.95
-    },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      scale: 1,
-      transition: { 
-        duration: 0.5,
-        ease: [0.25, 0.1, 0.25, 1.0]
-      }
-    }
-  }, [prefersReducedMotion])
-
   return (
     <section 
-      ref={sectionRef} 
       id="process" 
-      className="section-reveal py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8"
+      className="py-20 bg-gradient-to-b from-black via-gray-900 to-black relative overflow-hidden"
       aria-labelledby="process-heading"
       role="region"
     >
-      <div className="max-w-7xl mx-auto">
+      {/* Enhanced Animated Background */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-500 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-purple-500 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-green-500 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '4s' }} />
+      </div>
+
+      <div className="container mx-auto px-4 relative z-10">
         
         {/* Header Section */}
-        <motion.div 
-          className="text-center mb-8 sm:mb-12 lg:mb-16"
-          variants={fadeInUp}
-          initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
-        >
-          <div className="inline-block px-4 py-2 bg-primary/10 border border-primary/30 rounded-full text-primary text-sm font-semibold mb-6">
-            <span className="flex items-center gap-2">
-              <Zap className="w-3 h-3" aria-hidden="true" />
-              HOW IT WORKS
-            </span>
-          </div>
-          
-          <h2 
-            id="process-heading"
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 lg:mb-6 tracking-wide"
-          >
-            Plan → Build → Manage
-          </h2>
-          
-          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-300 max-w-4xl mx-auto leading-relaxed mb-2">
-            Zero Manual Effort. Maximum ROI.
-          </p>
-        </motion.div>
+        <div ref={headerRef}>
+          <ProcessHeader 
+            isVisible={isHeaderVisible} 
+            prefersReducedMotion={prefersReducedMotion} 
+          />
+        </div>
 
         {/* Process Steps Grid */}
-        <motion.div 
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 mb-8"
-          variants={staggerContainer}
-          initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
+        <div 
+          ref={gridRef}
+          className={`grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 transition-all duration-1000 ${
+            isGridVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+          }`}
         >
           {processSteps.map((step, index) => (
-            <motion.div
+            <ProcessStepCard
               key={step.title}
-              className="group relative"
-              variants={cardVariants}
-              whileHover={prefersReducedMotion ? {} : { 
-                y: -5,
-                transition: { duration: 0.2, ease: "easeOut" }
-              }}
-            >
-              {/* Step Number */}
-              <div className="absolute -top-3 -left-3 w-8 h-8 bg-gradient-to-r from-primary to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg z-10">
-                {index + 1}
-              </div>
-
-              {/* Card */}
-              <div 
-                className="h-full p-6 sm:p-8 bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-700/50 rounded-2xl backdrop-blur-sm hover:border-primary/30 hover:bg-gradient-to-br hover:from-gray-800/70 hover:to-gray-900/70 transition-all duration-300 group-hover:shadow-xl group-hover:shadow-primary/10"
-                role="article"
-                aria-labelledby={`step-${index + 1}-title`}
-                aria-describedby={`step-${index + 1}-description`}
-              >
-                {/* Icon */}
-                <motion.div 
-                  className={`w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r ${step.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-105 transition-transform duration-200`}
-                  whileHover={prefersReducedMotion ? {} : {
-                    rotate: [0, -5, 5, 0],
-                    transition: { duration: 0.5 }
-                  }}
-                >
-                  <step.icon 
-                    className="w-8 h-8 sm:w-10 sm:h-10 text-white" 
-                    aria-hidden="true"
-                  />
-                </motion.div>
-
-                {/* Content */}
-                <div className="space-y-3 sm:space-y-4">
-                  <div>
-                    <h3 
-                      id={`step-${index + 1}-title`}
-                      className="text-2xl sm:text-3xl font-bold text-white mb-2 group-hover:text-primary transition-colors duration-200"
-                    >
-                      {step.title}
-                    </h3>
-                    <h4 className="text-base sm:text-lg font-semibold text-primary mb-3">
-                      {step.subtitle}
-                    </h4>
-                  </div>
-                  
-                  <p 
-                    id={`step-${index + 1}-description`}
-                    className="text-gray-300 text-sm sm:text-base leading-relaxed"
-                  >
-                    {step.description}
-                  </p>
-                </div>
-
-                {/* Connecting Arrow (hidden on mobile, visible on md+) */}
-                {index < processSteps.length - 1 && (
-                  <div className="hidden md:block absolute top-1/2 -right-6 lg:-right-8 transform -translate-y-1/2 z-10">
-                    <motion.div
-                      className="w-8 h-8 lg:w-12 lg:h-12 rounded-full bg-gradient-to-r from-primary to-purple-600 flex items-center justify-center shadow-lg"
-                      animate={prefersReducedMotion ? {} : {
-                        x: [0, 3, 0],
-                        transition: { repeat: Infinity, duration: 2, ease: "easeInOut" }
-                      }}
-                      aria-hidden="true"
-                    >
-                      <svg 
-                        className="w-4 h-4 lg:w-6 lg:h-6 text-white" 
-                        fill="none" 
-                        stroke="currentColor" 
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </motion.div>
-                  </div>
-                )}
-              </div>
-            </motion.div>
+              step={step}
+              index={index}
+              isVisible={isGridVisible}
+              prefersReducedMotion={prefersReducedMotion}
+            />
           ))}
-        </motion.div>
+        </div>
 
-        {/* Bottom CTA Section */}
-        <motion.div
-          className="text-center"
-          initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={prefersReducedMotion ? {} : { 
-            delay: 0.6, 
-            duration: 0.6,
-            ease: "easeOut"
-          }}
-        >
-          <div className="inline-block px-6 sm:px-8 lg:px-12 py-4 sm:py-6 bg-gradient-to-r from-primary/10 to-purple-600/10 border border-primary/30 rounded-3xl backdrop-blur-sm">
-            <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-white">
-              Simple process. 
-              <span className="text-primary"> Extraordinary results.</span>
-            </p>
-          </div>
-        </motion.div>
+        {/* CTA Section */}
+        <div ref={ctaRef}>
+          <ProcessCTA 
+            isVisible={isCtaVisible} 
+            prefersReducedMotion={prefersReducedMotion} 
+          />
+        </div>
       </div>
+
+      {/* Structured Data for SEO */}
+      <script 
+        type="application/ld+json" 
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "HowTo",
+            "name": "SentientLabs AI Automation Process",
+            "description": "3-step process to implement AI automation for agencies",
+            "step": processSteps.map((step, index) => ({
+              "@type": "HowToStep",
+              "position": index + 1,
+              "name": step.title,
+              "text": step.description
+            }))
+          })
+        }}
+      />
     </section>
   )
 }

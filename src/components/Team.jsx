@@ -1,5 +1,4 @@
-import { useRef, useCallback, useMemo, useState } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { useRef, useCallback, useMemo, useState, useEffect } from 'react'
 import { User, Brain, TrendingUp, Phone, Linkedin, Users } from 'lucide-react'
 
 // Custom hook for reduced motion preference
@@ -9,17 +8,36 @@ const usePrefersReducedMotion = () => {
     : false
 }
 
+// Custom hook for intersection observer
+const useIntersectionObserver = (threshold = 0.1, rootMargin = '50px') => {
+  const [isVisible, setIsVisible] = useState(false)
+  const ref = useRef(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+          observer.unobserve(entry.target)
+        }
+      })
+    }, { threshold, rootMargin })
+
+    if (ref.current) observer.observe(ref.current)
+    return () => observer.disconnect()
+  }, [threshold, rootMargin])
+
+  return [ref, isVisible]
+}
+
 const Team = () => {
-  const sectionRef = useRef(null)
   const [imageLoadErrors, setImageLoadErrors] = useState({})
-  const isInView = useInView(sectionRef, { 
-    once: true, 
-    threshold: 0.1,
-    margin: "-10% 0px -10% 0px"
-  })
+  const [headerRef, isHeaderVisible] = useIntersectionObserver(0.5)
+  const [gridRef, isGridVisible] = useIntersectionObserver(0.2)
+  const [ctaRef, isCtaVisible] = useIntersectionObserver(0.3)
   const prefersReducedMotion = usePrefersReducedMotion()
 
-  // FIXED: Updated image paths for production
+  // Team members data
   const teamMembers = useMemo(() => [
     {
       id: 'krish-dubey',
@@ -27,12 +45,13 @@ const Team = () => {
       name: "Krish Dubey",
       position: "Founder & CEO",
       bio: "Vision. Sales. Relentless execution.",
-      image: "/images/krish_dubey_pfp.webp", // FIXED: Remove /src/assets prefix
+      image: "/images/krish_dubey_pfp.webp",
       phone: "+918788775779",
       linkedin: "https://www.linkedin.com/in/dubeykrish/",
       icon: User,
-      color: "from-blue-500 to-blue-600",
-      ariaLabel: "Krish Dubey, Co-Founder and CEO"
+      gradient: "from-blue-500 to-blue-600",
+      hoverGradient: "from-blue-400 to-blue-500",
+      ariaLabel: "Krish Dubey, Founder and CEO"
     },
     {
       id: 'karthik-chaudhary',
@@ -40,11 +59,12 @@ const Team = () => {
       name: "Karthik Chaudhary", 
       position: "Co-Founder & Chief Intelligence Officer",
       bio: "Product strategy & AI brain of the ops.",
-      image: "/images/karthik_chaudhary_pfp.webp", // FIXED: Remove /src/assets prefix
+      image: "/images/karthik_chaudhary_pfp.webp",
       phone: "+917020080167",
       linkedin: "https://www.linkedin.com/in/karthik-chaudhary-0082b630a/",
       icon: Brain,
-      color: "from-purple-500 to-purple-600",
+      gradient: "from-purple-500 to-purple-600",
+      hoverGradient: "from-purple-400 to-purple-500",
       ariaLabel: "Karthik Chaudhary, Co-Founder and Chief Intelligence Officer"
     },
     {
@@ -53,74 +73,20 @@ const Team = () => {
       name: "Harshit Dubey",
       position: "Co-Founder & Chief Growth Officer", 
       bio: "Growth hacking meets lead engineering.",
-      image: "/images/harshit.webp", // FIXED: Remove /src/assets prefix
+      image: "/images/harshit.webp",
       phone: "+917800292464",
       linkedin: "https://www.linkedin.com/in/harshit-dubey-11b115376/",
       icon: TrendingUp,
-      color: "from-green-500 to-green-600",
+      gradient: "from-green-500 to-green-600",
+      hoverGradient: "from-green-400 to-green-500",
       ariaLabel: "Harshit Dubey, Co-Founder and Chief Growth Officer"
     }
   ], [])
-
-  // Safe animation variants with error handling
-  const fadeInUp = useMemo(() => {
-    if (prefersReducedMotion) return {}
-    return {
-      hidden: { 
-        opacity: 0, 
-        y: 30,
-        transition: { duration: 0.3 }
-      },
-      visible: { 
-        opacity: 1, 
-        y: 0, 
-        transition: { 
-          duration: 0.6,
-          ease: [0.25, 0.1, 0.25, 1.0]
-        }
-      }
-    }
-  }, [prefersReducedMotion])
-
-  const staggerContainer = useMemo(() => {
-    if (prefersReducedMotion) return {}
-    return {
-      hidden: { opacity: 0 },
-      visible: {
-        opacity: 1,
-        transition: {
-          staggerChildren: 0.15,
-          delayChildren: 0.2
-        }
-      }
-    }
-  }, [prefersReducedMotion])
-
-  const cardVariants = useMemo(() => {
-    if (prefersReducedMotion) return {}
-    return {
-      hidden: { 
-        opacity: 0, 
-        y: 40,
-        scale: 0.95
-      },
-      visible: { 
-        opacity: 1, 
-        y: 0,
-        scale: 1,
-        transition: { 
-          duration: 0.5,
-          ease: [0.25, 0.1, 0.25, 1.0]
-        }
-      }
-    }
-  }, [prefersReducedMotion])
 
   // Enhanced click handlers with error handling
   const handlePhoneClick = useCallback((memberName, phone) => {
     return (e) => {
       try {
-        // Safe analytics tracking
         if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
           window.gtag('event', 'click', {
             event_category: 'Team Contact',
@@ -128,7 +94,6 @@ const Team = () => {
           })
         }
         
-        // Safe accessibility announcement
         if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
           try {
             const utterance = new SpeechSynthesisUtterance(`Calling ${memberName}`)
@@ -147,7 +112,6 @@ const Team = () => {
   const handleLinkedInClick = useCallback((memberName) => {
     return (e) => {
       try {
-        // Safe analytics tracking
         if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
           window.gtag('event', 'click', {
             event_category: 'Team Contact',
@@ -160,7 +124,6 @@ const Team = () => {
     }
   }, [])
 
-  // Safe image error handling
   const handleImageError = useCallback((memberId) => {
     console.warn(`Failed to load image for ${memberId}`)
     setImageLoadErrors(prev => ({
@@ -171,7 +134,7 @@ const Team = () => {
 
   // Enhanced fallback component
   const ImageFallback = ({ member }) => (
-    <div className={`w-full h-full bg-gradient-to-br ${member.color} flex items-center justify-center`}>
+    <div className={`w-full h-full bg-gradient-to-br ${member.gradient} flex items-center justify-center`}>
       <span 
         className="text-4xl sm:text-5xl lg:text-6xl filter drop-shadow-lg" 
         role="img" 
@@ -184,74 +147,78 @@ const Team = () => {
 
   return (
     <section 
-      ref={sectionRef} 
       id="team" 
-      className="section-reveal py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8"
+      className="py-20 bg-gradient-to-b from-black via-gray-900 to-black relative overflow-hidden"
       aria-labelledby="team-heading"
       role="region"
     >
-      <div className="max-w-7xl mx-auto">
+      {/* Enhanced Animated Background */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-500 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-purple-500 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-green-500 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '4s' }} />
+      </div>
+
+      <div className="container mx-auto px-4 relative z-10">
         
-        {/* Section Header */}
-        <motion.div 
-          className="text-center mb-8 sm:mb-12 lg:mb-16"
-          variants={fadeInUp}
-          initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
+        {/* Enhanced Section Header */}
+        <div 
+          ref={headerRef}
+          className={`text-center mb-16 transition-all duration-1000 ${
+            isHeaderVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
         >
-          <div className="inline-block px-4 py-2 bg-primary/10 border border-primary/30 rounded-full text-primary text-sm font-semibold mb-6">
-            <span className="flex items-center gap-2">
-              <Users className="w-3 h-3" aria-hidden="true" />
-              OUR TEAM
-            </span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600/20 backdrop-blur-sm border border-blue-500/30 rounded-full text-blue-400 text-sm font-semibold mb-6">
+            <Users className="w-4 h-4" aria-hidden="true" />
+            OUR TEAM
           </div>
           
           <h2 
             id="team-heading"
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6"
+            className="text-4xl lg:text-5xl font-bold text-white mb-6"
           >
-            The <span className="text-primary">SentientLabs</span> Team
+            The{' '}
+            <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 bg-clip-text text-transparent">
+              SentientLabs
+            </span>{' '}
+            Team
           </h2>
           
-          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-300 max-w-5xl mx-auto leading-relaxed">
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
             We're a lean, obsessed, automation-first squad that eats, breathes, and lives AI systems.
           </p>
-        </motion.div>
+        </div>
 
-        {/* Team Grid */}
-        <motion.div 
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12"
-          variants={staggerContainer}
-          initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
+        {/* Enhanced Team Grid */}
+        <div 
+          ref={gridRef}
+          className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-16 transition-all duration-1000 ${
+            isGridVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+          }`}
         >
           {teamMembers.map((member, index) => (
-            <motion.article
+            <article
               key={member.id}
-              className="group text-center relative"
-              variants={cardVariants}
-              whileHover={prefersReducedMotion ? {} : { 
-                y: -6,
-                transition: { duration: 0.2, ease: "easeOut" }
+              className={`group text-center relative bg-gray-900/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-800 hover:border-blue-500 transition-all duration-500 transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20 ${
+                isGridVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+              }`}
+              style={{ 
+                transitionDelay: isGridVisible ? `${index * 100}ms` : '0ms'
               }}
               aria-labelledby={`member-${member.id}-name`}
             >
-              {/* Profile Image Container */}
-              <motion.div 
-                className="relative mb-6 sm:mb-8 mx-auto"
-                whileHover={prefersReducedMotion ? {} : { 
-                  scale: 1.03,
-                  transition: { duration: 0.2, ease: "easeOut" }
-                }}
-              >
-                <div className={`w-36 h-36 sm:w-48 sm:h-48 lg:w-56 lg:h-56 mx-auto rounded-full border-4 border-gradient-to-br ${member.color} overflow-hidden shadow-xl group-hover:shadow-2xl group-hover:shadow-primary/20 transition-all duration-300 relative`}>
+              {/* Enhanced Profile Image Container */}
+              <div className="relative mb-6 mx-auto">
+                <div 
+                  className={`w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 mx-auto rounded-2xl border-4 border-gradient-to-br ${member.gradient} overflow-hidden shadow-xl group-hover:shadow-2xl group-hover:shadow-${member.gradient.split('-')[1]}-500/30 transition-all duration-500 relative transform group-hover:scale-105`}
+                >
                   {imageLoadErrors[member.id] ? (
                     <ImageFallback member={member} />
                   ) : (
                     <img 
                       src={member.image} 
                       alt={`Profile photo of ${member.name}`}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       loading="lazy"
                       decoding="async"
                       onError={() => handleImageError(member.id)}
@@ -259,10 +226,10 @@ const Team = () => {
                     />
                   )}
                   
-                  {/* Overlay with emoji */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-3 sm:pb-4">
+                  {/* Enhanced Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-end justify-center pb-4">
                     <span 
-                      className="text-2xl sm:text-3xl lg:text-4xl filter drop-shadow-lg"
+                      className="text-2xl sm:text-3xl filter drop-shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300"
                       role="img"
                       aria-label={`${member.name} emoji`}
                     >
@@ -271,99 +238,91 @@ const Team = () => {
                   </div>
                 </div>
                 
-                {/* Role Icon */}
-                <motion.div 
-                  className={`absolute -bottom-3 -right-1 sm:-bottom-4 sm:-right-2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br ${member.color} flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-200`}
-                  whileHover={prefersReducedMotion ? {} : {
-                    rotate: 12,
-                    transition: { duration: 0.2 }
-                  }}
+                {/* Enhanced Role Icon */}
+                <div 
+                  className={`absolute -bottom-3 -right-3 w-12 h-12 rounded-xl bg-gradient-to-br ${member.gradient} flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300 border-2 border-gray-900`}
                   aria-hidden="true"
                 >
-                  <member.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                </motion.div>
-              </motion.div>
+                  <member.icon className="w-6 h-6 text-white" />
+                </div>
+              </div>
               
-              {/* Content */}
-              <div className="space-y-3 sm:space-y-4">
-                <motion.h3 
+              {/* Enhanced Content */}
+              <div className="space-y-4">
+                <h3 
                   id={`member-${member.id}-name`}
-                  className="text-xl sm:text-2xl lg:text-3xl font-bold group-hover:text-primary transition-colors duration-300"
-                  whileHover={prefersReducedMotion ? {} : { 
-                    scale: 1.02,
-                    transition: { duration: 0.2 }
-                  }}
+                  className="text-2xl lg:text-3xl font-bold text-white group-hover:text-blue-400 transition-colors duration-300"
                 >
                   {member.name}
-                </motion.h3>
+                </h3>
                 
-                <p className="text-primary text-sm sm:text-base lg:text-lg font-semibold leading-tight">
+                <p className={`bg-gradient-to-r ${member.gradient} bg-clip-text text-transparent text-base lg:text-lg font-semibold leading-tight`}>
                   {member.position}
                 </p>
                 
-                <p className="text-gray-400 text-sm sm:text-base lg:text-lg leading-relaxed max-w-sm mx-auto font-medium">
+                <p className="text-gray-400 text-base lg:text-lg leading-relaxed max-w-sm mx-auto">
                   {member.bio}
                 </p>
                 
-                {/* Contact Options */}
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center items-center mt-4 sm:mt-6">
-                  <motion.a
+                {/* Enhanced Contact Options */}
+                <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mt-6">
+                  <a
                     href={`tel:${member.phone}`}
                     onClick={handlePhoneClick(member.name, member.phone)}
-                    className={`inline-flex items-center space-x-2 px-3 sm:px-4 py-2 bg-gradient-to-r ${member.color} text-white text-xs sm:text-sm font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 focus:ring-offset-2 focus:ring-offset-gray-900`}
-                    whileHover={prefersReducedMotion ? {} : { 
-                      scale: 1.03, 
-                      y: -1,
-                      transition: { duration: 0.15 }
-                    }}
-                    whileTap={prefersReducedMotion ? {} : { scale: 0.97 }}
+                    className={`inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r ${member.gradient} text-white text-sm font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 focus:ring-offset-2 focus:ring-offset-gray-900`}
                     aria-label={`Call ${member.name} at ${member.phone}`}
                   >
-                    <Phone className="w-3 h-3 sm:w-4 sm:h-4" aria-hidden="true" />
+                    <Phone className="w-4 h-4" aria-hidden="true" />
                     <span>Call</span>
-                  </motion.a>
+                  </a>
                   
-                  <motion.a
+                  <a
                     href={member.linkedin}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={handleLinkedInClick(member.name)}
-                    className={`inline-flex items-center space-x-2 px-3 sm:px-4 py-2 border-2 border-gray-600 text-white text-xs sm:text-sm font-semibold rounded-full hover:border-primary hover:bg-primary/10 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-opacity-50 focus:ring-offset-2 focus:ring-offset-gray-900`}
-                    whileHover={prefersReducedMotion ? {} : { 
-                      scale: 1.03, 
-                      y: -1,
-                      transition: { duration: 0.15 }
-                    }}
-                    whileTap={prefersReducedMotion ? {} : { scale: 0.97 }}
+                    className="inline-flex items-center space-x-2 px-6 py-3 border-2 border-gray-600 text-white text-sm font-semibold rounded-xl hover:border-blue-500 hover:bg-blue-500/10 hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-opacity-50 focus:ring-offset-2 focus:ring-offset-gray-900"
                     aria-label={`View ${member.name}'s LinkedIn profile`}
                   >
-                    <Linkedin className="w-3 h-3 sm:w-4 sm:h-4" aria-hidden="true" />
+                    <Linkedin className="w-4 h-4" aria-hidden="true" />
                     <span>LinkedIn</span>
-                  </motion.a>
+                  </a>
                 </div>
               </div>
-            </motion.article>
+            </article>
           ))}
-        </motion.div>
+        </div>
 
-        {/* Bottom Statement */}
-        <motion.div
-          className="text-center mt-12 sm:mt-16"
-          initial={prefersReducedMotion ? {} : { opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={prefersReducedMotion ? {} : { 
-            delay: 0.6, 
-            duration: 0.6,
-            ease: "easeOut"
-          }}
+        {/* Enhanced CTA Section */}
+        <div
+          ref={ctaRef}
+          className={`text-center transition-all duration-1000 ${
+            isCtaVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
         >
-          <div className="inline-block px-4 sm:px-6 lg:px-8 py-3 sm:py-4 bg-gradient-to-r from-primary/10 to-purple-600/10 border border-primary/30 rounded-2xl">
-            <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-white">
-              Ready to meet the team that will transform your business? 
-              <span className="text-primary"> Let's talk.</span>
+          <div className="inline-block p-8 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 rounded-2xl shadow-2xl">
+            <h3 className="text-2xl font-bold text-white mb-4">
+              Ready to meet the team that will transform your business?
+            </h3>
+            <p className="text-blue-100 mb-6 max-w-md mx-auto">
+              Let's have a conversation about how we can help you scale with AI automation.
             </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a 
+                href="tel:+918788775779" 
+                className="px-8 py-3 bg-white text-blue-600 rounded-xl font-semibold hover:bg-gray-100 hover:scale-105 transition-all duration-300 shadow-lg"
+              >
+                Schedule Call
+              </a>
+              <a 
+                href="mailto:hello@sentientlabs.in" 
+                className="px-8 py-3 border-2 border-white text-white rounded-xl font-semibold hover:bg-white hover:text-blue-600 hover:scale-105 transition-all duration-300"
+              >
+                Email Us
+              </a>
+            </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   )
