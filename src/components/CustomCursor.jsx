@@ -1,37 +1,59 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { usePrefersReducedMotion } from '../utils/animations.js'
+
+// Custom hook for reduced motion preference
+const usePrefersReducedMotion = () => {
+  return typeof window !== 'undefined' 
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    : false
+}
+
+// Custom hook for touch device detection
+const useIsTouchDevice = () => {
+  return useMemo(() => {
+    if (typeof window === 'undefined') return false
+    return 'ontouchstart' in window || navigator.maxTouchPoints > 0
+  }, [])
+}
 
 const CustomCursor = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [isHovering, setIsHovering] = useState(false)
   const [isClicking, setIsClicking] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
+  
   const prefersReducedMotion = usePrefersReducedMotion()
+  const isTouchDevice = useIsTouchDevice()
+
+  // Memoized event handlers for performance
+  const handleMouseMove = useCallback((e) => {
+    setMousePosition({ x: e.clientX, y: e.clientY })
+    setIsVisible(true)
+  }, [])
+
+  const handleMouseEnter = useCallback(() => setIsHovering(true), [])
+  const handleMouseLeave = useCallback(() => setIsHovering(false), [])
+  const handleMouseDown = useCallback(() => setIsClicking(true), [])
+  const handleMouseUp = useCallback(() => setIsClicking(false), [])
+  const handleMouseOut = useCallback(() => setIsVisible(false), [])
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      setMousePosition({ x: e.clientX, y: e.clientY })
-      setIsVisible(true)
-    }
+    // Don't render cursor on touch devices or if reduced motion is preferred
+    if (isTouchDevice || prefersReducedMotion) return
 
-    const handleMouseEnter = () => setIsHovering(true)
-    const handleMouseLeave = () => setIsHovering(false)
-    const handleMouseDown = () => setIsClicking(true)
-    const handleMouseUp = () => setIsClicking(false)
-    const handleMouseOut = () => setIsVisible(false)
-
-    const interactiveElements = document.querySelectorAll('a, button, [data-cursor="pointer"]')
+    const interactiveElements = document.querySelectorAll('a, button, [data-cursor="pointer"], input, textarea, select, [role="button"]')
     
+    // Add event listeners to interactive elements
     interactiveElements.forEach(el => {
-      el.addEventListener('mouseenter', handleMouseEnter)
-      el.addEventListener('mouseleave', handleMouseLeave)
+      el.addEventListener('mouseenter', handleMouseEnter, { passive: true })
+      el.addEventListener('mouseleave', handleMouseLeave, { passive: true })
     })
 
-    window.addEventListener('mousemove', handleMouseMove)
-    window.addEventListener('mousedown', handleMouseDown)
-    window.addEventListener('mouseup', handleMouseUp)
-    document.addEventListener('mouseleave', handleMouseOut)
+    // Global mouse event listeners
+    window.addEventListener('mousemove', handleMouseMove, { passive: true })
+    window.addEventListener('mousedown', handleMouseDown, { passive: true })
+    window.addEventListener('mouseup', handleMouseUp, { passive: true })
+    document.addEventListener('mouseleave', handleMouseOut, { passive: true })
 
     return () => {
       interactiveElements.forEach(el => {
@@ -43,44 +65,87 @@ const CustomCursor = () => {
       window.removeEventListener('mouseup', handleMouseUp)
       document.removeEventListener('mouseleave', handleMouseOut)
     }
-  }, [])
+  }, [handleMouseMove, handleMouseEnter, handleMouseLeave, handleMouseDown, handleMouseUp, handleMouseOut, isTouchDevice, prefersReducedMotion])
 
-  if (prefersReducedMotion) return null
+  // Memoized animation variants
+  const cursorVariants = useMemo(() => ({
+    default: {
+      scale: 1,
+      opacity: 1,
+    },
+    hover: {
+      scale: 1.5,
+      opacity: 0.8,
+    },
+    click: {
+      scale: 0.8,
+      opacity: 1,
+    },
+    hidden: {
+      opacity: 0,
+    }
+  }), [])
+
+  const outerCursorVariants = useMemo(() => ({
+    default: {
+      scale: 1,
+      opacity: 0.3,
+    },
+    hover: {
+      scale: 2,
+      opacity: 0.6,
+    },
+    hidden: {
+      opacity: 0,
+    }
+  }), [])
+
+  // Don't render on touch devices or if reduced motion is preferred
+  if (isTouchDevice || prefersReducedMotion) return null
+
+  const getCurrentVariant = () => {
+    if (!isVisible) return 'hidden'
+    if (isClicking) return 'click'
+    if (isHovering) return 'hover'
+    return 'default'
+  }
+
+  const currentVariant = getCurrentVariant()
 
   return (
     <>
+      {/* Inner cursor dot */}
       <motion.div
-        className="hide-touch fixed top-0 left-0 w-6 h-6 bg-primary rounded-full pointer-events-none z-[9999] mix-blend-difference"
+        className="fixed top-0 left-0 w-6 h-6 bg-primary rounded-full pointer-events-none z-[9999] mix-blend-difference"
         style={{
           x: mousePosition.x - 12,
           y: mousePosition.y - 12,
         }}
-        animate={{
-          scale: isClicking ? 0.8 : isHovering ? 1.5 : 1,
-          opacity: isVisible ? (isHovering ? 0.8 : 1) : 0,
-        }}
+        variants={cursorVariants}
+        animate={currentVariant}
         transition={{
           type: "spring",
           stiffness: 500,
           damping: 28,
+          mass: 0.5,
         }}
         aria-hidden="true"
       />
 
+      {/* Outer cursor ring */}
       <motion.div
-        className="hide-touch fixed top-0 left-0 w-8 h-8 border-2 border-primary rounded-full pointer-events-none z-[9998] mix-blend-difference"
+        className="fixed top-0 left-0 w-8 h-8 border-2 border-primary rounded-full pointer-events-none z-[9998] mix-blend-difference"
         style={{
           x: mousePosition.x - 16,
           y: mousePosition.y - 16,
         }}
-        animate={{
-          scale: isHovering ? 2 : 1,
-          opacity: isVisible ? (isHovering ? 0.6 : 0.3) : 0,
-        }}
+        variants={outerCursorVariants}
+        animate={isVisible ? (isHovering ? 'hover' : 'default') : 'hidden'}
         transition={{
           type: "spring",
           stiffness: 150,
           damping: 15,
+          mass: 0.8,
           delay: 0.1,
         }}
         aria-hidden="true"

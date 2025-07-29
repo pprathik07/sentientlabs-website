@@ -19,7 +19,7 @@ const Team = () => {
   })
   const prefersReducedMotion = usePrefersReducedMotion()
 
-  // Memoized team data to prevent unnecessary re-renders
+  // FIXED: Updated image paths for production
   const teamMembers = useMemo(() => [
     {
       id: 'krish-dubey',
@@ -27,7 +27,7 @@ const Team = () => {
       name: "Krish Dubey",
       position: "Founder & CEO",
       bio: "Vision. Sales. Relentless execution.",
-      image: "/src/assets/images/krish_dubey_pfp.jpeg",
+      image: "/images/krish_dubey_pfp.webp", // FIXED: Remove /src/assets prefix
       phone: "+918788775779",
       linkedin: "https://www.linkedin.com/in/dubeykrish/",
       icon: User,
@@ -40,7 +40,7 @@ const Team = () => {
       name: "Karthik Chaudhary", 
       position: "Co-Founder & Chief Intelligence Officer",
       bio: "Product strategy & AI brain of the ops.",
-      image: "/src/assets/images/karthik_chaudhary_pfp.jpg",
+      image: "/images/karthik_chaudhary_pfp.webp", // FIXED: Remove /src/assets prefix
       phone: "+917020080167",
       linkedin: "https://www.linkedin.com/in/karthik-chaudhary-0082b630a/",
       icon: Brain,
@@ -53,7 +53,7 @@ const Team = () => {
       name: "Harshit Dubey",
       position: "Co-Founder & Chief Growth Officer", 
       bio: "Growth hacking meets lead engineering.",
-      image: "/src/assets/images/harshit.jpg",
+      image: "/images/harshit.webp", // FIXED: Remove /src/assets prefix
       phone: "+917800292464",
       linkedin: "https://www.linkedin.com/in/harshit-dubey-11b115376/",
       icon: TrendingUp,
@@ -62,95 +62,121 @@ const Team = () => {
     }
   ], [])
 
-  // Optimized animation variants
-  const fadeInUp = useMemo(() => prefersReducedMotion ? {} : {
-    hidden: { 
-      opacity: 0, 
-      y: 30,
-      transition: { duration: 0.3 }
-    },
-    visible: { 
-      opacity: 1, 
-      y: 0, 
-      transition: { 
-        duration: 0.6,
-        ease: [0.25, 0.1, 0.25, 1.0]
+  // Safe animation variants with error handling
+  const fadeInUp = useMemo(() => {
+    if (prefersReducedMotion) return {}
+    return {
+      hidden: { 
+        opacity: 0, 
+        y: 30,
+        transition: { duration: 0.3 }
+      },
+      visible: { 
+        opacity: 1, 
+        y: 0, 
+        transition: { 
+          duration: 0.6,
+          ease: [0.25, 0.1, 0.25, 1.0]
+        }
       }
     }
   }, [prefersReducedMotion])
 
-  const staggerContainer = useMemo(() => prefersReducedMotion ? {} : {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15,
-        delayChildren: 0.2
+  const staggerContainer = useMemo(() => {
+    if (prefersReducedMotion) return {}
+    return {
+      hidden: { opacity: 0 },
+      visible: {
+        opacity: 1,
+        transition: {
+          staggerChildren: 0.15,
+          delayChildren: 0.2
+        }
       }
     }
   }, [prefersReducedMotion])
 
-  const cardVariants = useMemo(() => prefersReducedMotion ? {} : {
-    hidden: { 
-      opacity: 0, 
-      y: 40,
-      scale: 0.95
-    },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      scale: 1,
-      transition: { 
-        duration: 0.5,
-        ease: [0.25, 0.1, 0.25, 1.0]
+  const cardVariants = useMemo(() => {
+    if (prefersReducedMotion) return {}
+    return {
+      hidden: { 
+        opacity: 0, 
+        y: 40,
+        scale: 0.95
+      },
+      visible: { 
+        opacity: 1, 
+        y: 0,
+        scale: 1,
+        transition: { 
+          duration: 0.5,
+          ease: [0.25, 0.1, 0.25, 1.0]
+        }
       }
     }
   }, [prefersReducedMotion])
 
-  // Optimized click handlers for analytics and accessibility
+  // Enhanced click handlers with error handling
   const handlePhoneClick = useCallback((memberName, phone) => {
     return (e) => {
-      // Analytics tracking
-      if (typeof gtag !== 'undefined') {
-        gtag('event', 'click', {
-          event_category: 'Team Contact',
-          event_label: `Call ${memberName}`
-        })
-      }
-      
-      // Accessibility announcement
-      if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(`Calling ${memberName}`)
-        utterance.volume = 0.1
-        speechSynthesis.speak(utterance)
+      try {
+        // Safe analytics tracking
+        if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+          window.gtag('event', 'click', {
+            event_category: 'Team Contact',
+            event_label: `Call ${memberName}`
+          })
+        }
+        
+        // Safe accessibility announcement
+        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+          try {
+            const utterance = new SpeechSynthesisUtterance(`Calling ${memberName}`)
+            utterance.volume = 0.1
+            speechSynthesis.speak(utterance)
+          } catch (speechError) {
+            console.warn('Speech synthesis failed:', speechError)
+          }
+        }
+      } catch (error) {
+        console.warn('Phone click handler failed:', error)
       }
     }
   }, [])
 
   const handleLinkedInClick = useCallback((memberName) => {
     return (e) => {
-      // Analytics tracking
-      if (typeof gtag !== 'undefined') {
-        gtag('event', 'click', {
-          event_category: 'Team Contact',
-          event_label: `LinkedIn ${memberName}`
-        })
+      try {
+        // Safe analytics tracking
+        if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+          window.gtag('event', 'click', {
+            event_category: 'Team Contact',
+            event_label: `LinkedIn ${memberName}`
+          })
+        }
+      } catch (error) {
+        console.warn('LinkedIn click handler failed:', error)
       }
     }
   }, [])
 
-  // Image error handling
+  // Safe image error handling
   const handleImageError = useCallback((memberId) => {
+    console.warn(`Failed to load image for ${memberId}`)
     setImageLoadErrors(prev => ({
       ...prev,
       [memberId]: true
     }))
   }, [])
 
-  // Fallback component for failed image loads
+  // Enhanced fallback component
   const ImageFallback = ({ member }) => (
     <div className={`w-full h-full bg-gradient-to-br ${member.color} flex items-center justify-center`}>
-      <span className="text-4xl sm:text-5xl lg:text-6xl" role="img" aria-label={member.name}>
+      <span 
+        className="text-4xl sm:text-5xl lg:text-6xl filter drop-shadow-lg" 
+        role="img" 
+        aria-label={member.name}
+      >
         {member.emoji}
       </span>
     </div>
@@ -160,107 +186,11 @@ const Team = () => {
     <section 
       ref={sectionRef} 
       id="team" 
-      className="section-reveal py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden"
-      style={{
-        background: `
-          radial-gradient(circle at 20% 80%, rgba(122, 99, 255, 0.15) 0%, transparent 50%),
-          radial-gradient(circle at 80% 20%, rgba(168, 85, 247, 0.12) 0%, transparent 50%),
-          radial-gradient(circle at 40% 40%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-          linear-gradient(135deg, rgba(15, 13, 36, 0.98) 0%, rgba(30, 27, 75, 0.95) 50%, rgba(15, 13, 36, 1) 100%)
-        `
-      }}
+      className="section-reveal py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8"
       aria-labelledby="team-heading"
       role="region"
     >
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Floating Orbs */}
-        <motion.div
-          className="absolute top-20 left-10 w-32 h-32 bg-primary/5 rounded-full blur-xl"
-          animate={prefersReducedMotion ? {} : {
-            y: [0, -20, 0],
-            scale: [1, 1.1, 1],
-            opacity: [0.3, 0.6, 0.3]
-          }}
-          transition={prefersReducedMotion ? {} : {
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        
-        <motion.div
-          className="absolute bottom-32 right-16 w-24 h-24 bg-purple-500/5 rounded-full blur-xl"
-          animate={prefersReducedMotion ? {} : {
-            y: [0, 15, 0],
-            scale: [1, 1.2, 1],
-            opacity: [0.2, 0.5, 0.2]
-          }}
-          transition={prefersReducedMotion ? {} : {
-            duration: 6,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 2
-          }}
-        />
-
-        <motion.div
-          className="absolute top-1/2 left-1/2 w-40 h-40 bg-blue-500/4 rounded-full blur-2xl"
-          animate={prefersReducedMotion ? {} : {
-            rotate: [0, 360],
-            scale: [1, 1.3, 1]
-          }}
-          transition={prefersReducedMotion ? {} : {
-            duration: 20,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        />
-
-        {/* Grid Pattern Overlay */}
-        <div 
-          className="absolute inset-0 opacity-[0.02]"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(122, 99, 255, 0.3) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(122, 99, 255, 0.3) 1px, transparent 1px)
-            `,
-            backgroundSize: '50px 50px'
-          }}
-        />
-
-        {/* Animated Lines */}
-        <motion.div
-          className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent"
-          animate={prefersReducedMotion ? {} : {
-            scaleX: [0, 1, 0],
-            opacity: [0, 1, 0]
-          }}
-          transition={prefersReducedMotion ? {} : {
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut",
-            repeatDelay: 2
-          }}
-        />
-
-        <motion.div
-          className="absolute bottom-0 right-0 w-full h-px bg-gradient-to-l from-transparent via-purple-500/20 to-transparent"
-          animate={prefersReducedMotion ? {} : {
-            scaleX: [0, 1, 0],
-            opacity: [0, 1, 0]
-          }}
-          transition={prefersReducedMotion ? {} : {
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 4,
-            repeatDelay: 2
-          }}
-        />
-      </div>
-
-      <div className="max-w-7xl mx-auto relative z-10">
+      <div className="max-w-7xl mx-auto">
         
         {/* Section Header */}
         <motion.div 
@@ -269,7 +199,7 @@ const Team = () => {
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
         >
-          <div className="inline-block px-4 py-2 bg-primary/10 border border-primary/30 rounded-full text-primary text-sm font-semibold mb-6 backdrop-blur-sm">
+          <div className="inline-block px-4 py-2 bg-primary/10 border border-primary/30 rounded-full text-primary text-sm font-semibold mb-6">
             <span className="flex items-center gap-2">
               <Users className="w-3 h-3" aria-hidden="true" />
               OUR TEAM
@@ -298,12 +228,10 @@ const Team = () => {
           {teamMembers.map((member, index) => (
             <motion.article
               key={member.id}
-              className="group text-center relative backdrop-blur-sm bg-white/5 rounded-3xl p-6 border border-white/10"
+              className="group text-center relative"
               variants={cardVariants}
               whileHover={prefersReducedMotion ? {} : { 
                 y: -6,
-                scale: 1.02,
-                boxShadow: "0 20px 40px rgba(122, 99, 255, 0.15)",
                 transition: { duration: 0.2, ease: "easeOut" }
               }}
               aria-labelledby={`member-${member.id}-name`}
@@ -327,13 +255,14 @@ const Team = () => {
                       loading="lazy"
                       decoding="async"
                       onError={() => handleImageError(member.id)}
+                      onLoad={() => console.log(`Successfully loaded image for ${member.name}`)}
                     />
                   )}
                   
                   {/* Overlay with emoji */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-3 sm:pb-4">
                     <span 
-                      className="text-2xl sm:text-3xl lg:text-4xl"
+                      className="text-2xl sm:text-3xl lg:text-4xl filter drop-shadow-lg"
                       role="img"
                       aria-label={`${member.name} emoji`}
                     >
@@ -428,7 +357,7 @@ const Team = () => {
             ease: "easeOut"
           }}
         >
-          <div className="inline-block px-4 sm:px-6 lg:px-8 py-3 sm:py-4 bg-gradient-to-r from-primary/10 to-purple-600/10 border border-primary/30 rounded-2xl backdrop-blur-sm">
+          <div className="inline-block px-4 sm:px-6 lg:px-8 py-3 sm:py-4 bg-gradient-to-r from-primary/10 to-purple-600/10 border border-primary/30 rounded-2xl">
             <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-white">
               Ready to meet the team that will transform your business? 
               <span className="text-primary"> Let's talk.</span>

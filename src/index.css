@@ -1,76 +1,236 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Critical above-the-fold CSS - Inline this in HTML head */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
 
-@font-face {
-  font-family: 'Gilroy';
-  src: url('./assets/fonts/Gilroy-Regular.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
+/* CSS Variables for consistent theming and reduced repaints */
+:root {
+  --primary-bg: #000000;
+  --secondary-bg: #111111;
+  --accent-color: #3b82f6;
+  --text-primary: #ffffff;
+  --text-secondary: #9ca3af;
+  --border-color: #374151;
+  --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
 }
 
-@layer base {
-  * {
-    box-sizing: border-box;
-  }
-  
-  html {
-    scroll-behavior: smooth;
-  }
-  
-  body {
-    margin: 0;
-    font-family: 'Gilroy', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    color: white;
-    background-color: #000;
+/* Critical performance optimizations */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  /* Prevent iOS bounce scroll */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  background-color: var(--primary-bg);
+  color: var(--text-primary);
+  line-height: 1.6;
+  /* Performance optimizations */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  /* Reduce paint operations */
+  will-change: scroll-position;
+}
+
+/* Optimize images for better LCP */
+img {
+  max-width: 100%;
+  height: auto;
+  /* Prevent layout shift */
+  aspect-ratio: attr(width) / attr(height);
+  /* Improve rendering performance */
+  image-rendering: -webkit-optimize-contrast;
+  /* Force GPU acceleration */
+  transform: translateZ(0);
+}
+
+/* Reduce motion for accessibility and performance */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
-@layer utilities {
-  .hide-touch {
-    @media (hover: none) and (pointer: coarse) {
-      display: none !important;
-    }
+/* Critical above-the-fold hero styles */
+.hero-container {
+  min-height: 100vh;
+  background: var(--gradient-primary);
+  /* Force GPU layer */
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Optimized animations using CSS instead of JS */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 30px, 0);
   }
-  
-  .section-reveal {
+  to {
     opacity: 1;
-    transform: translateY(0);
-  }
-  
-  @media (prefers-reduced-motion: reduce) {
-    * {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
-  }
-  
-  .skip-link {
-    position: absolute;
-    top: -40px;
-    left: 6px;
-    background: #1E40AF;
-    color: white;
-    padding: 8px;
-    text-decoration: none;
-    border-radius: 4px;
-    z-index: 1000;
-  }
-  
-  .skip-link:focus {
-    top: 6px;
+    transform: translate3d(0, 0, 0);
   }
 }
 
-@media (prefers-contrast: high) {
-  .text-gray-300,
-  .text-gray-400,
-  .text-gray-600,
-  .text-gray-700 {
-    color: white !important;
+.animate-fadeInUp {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* Optimized button styles to reduce paint */
+.btn-primary {
+  background: var(--gradient-primary);
+  border: none;
+  border-radius: 9999px;
+  color: white;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  /* GPU acceleration */
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.btn-primary:hover {
+  transform: translateZ(0) scale(1.05);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+}
+
+/* Container optimizations */
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container { max-width: 640px; }
+}
+
+@media (min-width: 768px) {
+  .container { max-width: 768px; }
+}
+
+@media (min-width: 1024px) {
+  .container { max-width: 1024px; }
+}
+
+@media (min-width: 1280px) {
+  .container { max-width: 1280px; }
+}
+
+@media (min-width: 1536px) {
+  .container { max-width: 1536px; }
+}
+
+/* Optimize gradient performance */
+.gradient-text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  /* Improve rendering */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+/* Critical navigation styles */
+nav {
+  /* Force GPU layer for smooth scrolling */
+  transform: translateZ(0);
+  will-change: background-color, backdrop-filter;
+}
+
+nav.scrolled {
+  background-color: rgba(17, 24, 39, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(55, 65, 81, 0.5);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Optimize focus states */
+.focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+/* Loading states for perceived performance */
+.loading-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Intersection observer optimizations */
+.section-reveal {
+  /* Optimize for intersection observer */
+  contain: layout style paint;
+}
+
+/* Optimize blur effects */
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+  /* Fallback for unsupported browsers */
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.backdrop-blur-md {
+  backdrop-filter: blur(12px);
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Typography optimizations */
+h1, h2, h3, h4, h5, h6 {
+  text-rendering: optimizeSpeed;
+  /* Reduce reflow/repaint */
+  contain: layout style;
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  /* Reduce complexity on mobile */
+  .backdrop-blur-sm,
+  .backdrop-blur-md {
+    backdrop-filter: none;
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+  
+  /* Optimize mobile scrolling */
+  body {
+    -webkit-overflow-scrolling: touch;
   }
 }
+
+/* Print styles */
+@media print {
+  * {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+}
+

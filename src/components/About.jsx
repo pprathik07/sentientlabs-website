@@ -1,134 +1,155 @@
-import { useEffect, useRef } from 'react'
-import { motion, useInView } from 'framer-motion'
-import { usePrefersReducedMotion } from '../utils/animations.js'
+import { memo, useMemo, useRef, useEffect, useState } from 'react';
+import { Zap, Target, TrendingUp, Users } from 'lucide-react';
 
-const About = () => {
-  const sectionRef = useRef(null)
-  const isInView = useInView(sectionRef, { once: true, threshold: 0.3 })
-  const prefersReducedMotion = usePrefersReducedMotion()
+// Icon wrapper
+const IconWrapper = memo(({ Icon }) => (
+  <div className="p-3 bg-blue-600 bg-opacity-20 rounded-lg">
+    <Icon size={24} className="text-blue-400" />
+  </div>
+));
 
-  const solutionPoints = [
-    {
-      icon: '🔧',
-      title: 'Integrated Smart System',
-      description: 'CRM + Email + LinkedIn + Data Scraping = One smart system'
-    },
-    {
-      icon: '💡',
-      title: 'Tailor-Made Funnels',
-      description: 'Each funnel is tailor-made for your niche, target, and offer'
-    },
-    {
-      icon: '📥',
-      title: 'Complete Lead Management',
-      description: 'Leads come in. We capture, nurture, and qualify them for you'
-    },
-    {
-      icon: '📈',
-      title: 'Zero Manual Work',
-      description: 'All with zero manual intervention.'
-    }
-  ]
+// Feature card
+const FeatureCard = memo(({ icon: Icon, title, description, delay = 0 }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef(null);
 
-  const containerVariants = prefersReducedMotion ? {} : {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15,
-        delayChildren: 0.2
-      }
-    }
-  }
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.3 });
 
-  const itemVariants = prefersReducedMotion ? {} : {
-    hidden: { opacity: 0, y: 50 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }
-    }
-  }
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <section 
-      ref={sectionRef} 
-      id="about" 
-      className="section-reveal bg-bg-light text-black min-h-screen"
-      aria-labelledby="about-heading"
+    <div
+      ref={ref}
+      className={`p-6 bg-gray-900 bg-opacity-50 rounded-xl border border-gray-800 hover:border-blue-500 transition-all duration-500 transform hover:scale-105 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`}
+      style={{ transitionDelay: `${delay}ms` }}
     >
-      <div className="grid lg:grid-cols-2 gap-8 lg:gap-0 min-h-screen">
-        <motion.div 
-          className="flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8 xl:px-16"
-          initial={prefersReducedMotion ? {} : { opacity: 0, x: -50 }}
-          animate={isInView ? { opacity: 1, x: 0 } : {}}
-          transition={prefersReducedMotion ? {} : { duration: 1 }}
-        >
-          <div className="max-w-lg w-full">
-            <motion.div
-              className="inline-block px-4 py-2 bg-primary/10 border border-primary/30 rounded-full text-primary text-sm font-semibold mb-6"
-              initial={prefersReducedMotion ? {} : { opacity: 0, scale: 0.8 }}
-              animate={isInView ? { opacity: 1, scale: 1 } : {}}
-              transition={prefersReducedMotion ? {} : { delay: 0.2, duration: 0.6 }}
-            >
-              🚀 OUR SOLUTION STACK
-            </motion.div>
-            <h2 
-              id="about-heading"
-              className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold leading-tight mb-4 lg:mb-6"
-            >
-              <span className="text-primary">Custom AI</span><br/>
-              Automation Systems
-            </h2>
-            <p className="text-base sm:text-lg lg:text-xl text-gray-600 leading-relaxed">
-              Built uniquely for every single client.
-            </p>
-          </div>
-        </motion.div>
+      <IconWrapper Icon={Icon} />
+      <h3 className="text-xl font-semibold text-white my-4">{title}</h3>
+      <p className="text-gray-400 leading-relaxed">{description}</p>
+    </div>
+  );
+});
 
-        <div className="flex items-center px-4 py-8 sm:px-6 lg:px-8 xl:px-16">
-          <motion.div 
-            className="space-y-6 sm:space-y-8 lg:space-y-12 w-full"
-            variants={containerVariants}
-            initial="hidden"
-            animate={isInView ? "visible" : "hidden"}
-          >
-            {solutionPoints.map((point, index) => (
-              <motion.div
-                key={index}
-                className="flex items-start space-x-3 sm:space-x-4 lg:space-x-6"
-                variants={itemVariants}
-              >
-                <div className="flex-shrink-0">
-                  <span 
-                    className="text-2xl sm:text-3xl lg:text-4xl"
-                    role="img"
-                    aria-label={point.title}
-                  >
-                    {point.icon}
-                  </span>
-                </div>
-                <div className="flex-1">
-                  <p className="text-base sm:text-lg lg:text-xl xl:text-2xl leading-relaxed text-gray-700">
-                    {point.description}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
+// Section header
+const SectionHeader = memo(({ title, subtitle }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef(null);
 
-            <motion.div
-              className="pt-6 sm:pt-8 border-t border-gray-200"
-              variants={itemVariants}
-            >
-              <p className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-800 leading-relaxed">
-                You don't need a VA. You need <span className="text-primary">SentientLabs</span>.
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.5 });
+
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={`text-center mb-16 transition-all duration-1000 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`}
+    >
+      <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">
+        <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+          {title}
+        </span>
+      </h2>
+      <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+        {subtitle}
+      </p>
+    </div>
+  );
+});
+
+const About = () => {
+  const aboutData = useMemo(() => ({
+    header: {
+      title: 'Revolutionizing Agency Automation',
+      subtitle: 'We combine powerful AI tools with proven marketing strategies to help agencies grow efficiently and predictably.'
+    },
+    features: [
+      {
+        icon: Zap,
+        title: 'Lightning Fast Automation',
+        description: 'Deploy AI systems that cut down manual work and boost team output from day one.'
+      },
+      {
+        icon: Target,
+        title: 'Precision Targeting',
+        description: 'Our algorithms qualify high-value leads automatically, so you focus only on what converts.'
+      },
+      {
+        icon: TrendingUp,
+        title: 'Scalable Growth',
+        description: 'Solutions that evolve with your agency—from 5 clients to 500.'
+      },
+      {
+        icon: Users,
+        title: 'Expert Support',
+        description: 'Our team is always available to make sure your automations run smoothly and deliver ROI.'
+      }
+    ]
+  }), []);
+
+  return (
+    <section className="py-20 bg-black relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-b from-gray-900 via-black to-gray-900 opacity-50" />
+      <div className="container mx-auto px-4 relative z-10">
+        <SectionHeader title={aboutData.header.title} subtitle={aboutData.header.subtitle} />
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {aboutData.features.map((feature, index) => (
+            <FeatureCard
+              key={index}
+              icon={feature.icon}
+              title={feature.title}
+              description={feature.description}
+              delay={index * 150}
+            />
+          ))}
+        </div>
+
+        {/* Optional CTA */}
+        <div className="text-center mt-16">
+          <div className="inline-flex items-center gap-4 p-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl">
+            <div className="text-left">
+              <h3 className="text-xl font-semibold text-white mb-1">
+                Ready to Transform Your Agency?
+              </h3>
+              <p className="text-blue-100">
+                Get started with a free consultation today
               </p>
-            </motion.div>
-          </motion.div>
+            </div>
+            <a
+              href="tel:+919876543210"
+              className="px-6 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-gray-100 transition-colors flex-shrink-0"
+            >
+              Contact Us
+            </a>
+          </div>
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default About
+export default memo(About);

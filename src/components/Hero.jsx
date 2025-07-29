@@ -1,199 +1,267 @@
-import { useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
-import { gsap } from 'gsap'
-import { ChevronDown } from 'lucide-react'
-import { usePrefersReducedMotion } from '../utils/animations.js'
-import CustomCursor from './CustomCursor'
+import { useRef, useCallback, useMemo, useEffect, useState } from 'react'
+import { ArrowRight, Zap } from 'lucide-react'
 
-const Hero = () => {
-  const heroRef = useRef(null)
-  const titleRef = useRef(null)
-  const logoRef = useRef(null)
-  const prefersReducedMotion = usePrefersReducedMotion()
+// Lightweight reduced motion hook
+const usePrefersReducedMotion = () => {
+  const [prefersReduced, setPrefersReduced] = useState(false)
 
   useEffect(() => {
-    if (prefersReducedMotion) return
+    if (typeof window === 'undefined') return
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setPrefersReduced(mediaQuery.matches)
+    
+    const handleChange = (e) => setPrefersReduced(e.matches)
+    mediaQuery.addEventListener('change', handleChange)
+    return () => mediaQuery.removeEventListener('change', handleChange)
+  }, [])
 
-    const tl = gsap.timeline({ delay: 1 })
+  return prefersReduced
+}
 
-    tl.fromTo(titleRef.current.querySelectorAll('.word'), 
-      { 
-        y: 100, 
-        opacity: 0,
-      },
-      { 
-        y: 0, 
-        opacity: 1,
-        duration: 1.2,
-        ease: "power3.out",
-        stagger: 0.15,
+// EXACT rotating logo using your logo-sentientlabs.png
+const HeroLogo = ({ className }) => {
+  const prefersReducedMotion = usePrefersReducedMotion()
+
+  return (
+    <img
+      src="/logo-sentientlabs.png"
+      alt="SentientLabs Logo"
+      className={`object-contain ${!prefersReducedMotion ? 'animate-spin' : ''} ${className}`}
+      style={{ 
+        width: '80px',
+        height: '80px',
+        animationDuration: '3s'
+      }}
+      loading="eager"
+      decoding="sync"
+      width="80"
+      height="80"
+    />
+  )
+}
+
+const Hero = () => {
+  const sectionRef = useRef(null)
+  const [isVisible, setIsVisible] = useState(false)
+  const prefersReducedMotion = usePrefersReducedMotion()
+
+  // Fixed Intersection Observer with error handling
+  useEffect(() => {
+    let observer
+
+    try {
+      if ('IntersectionObserver' in window && sectionRef.current) {
+        observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                setIsVisible(true)
+                observer?.disconnect()
+              }
+            })
+          },
+          { 
+            threshold: 0.1, 
+            rootMargin: '0px 0px -10% 0px'
+          }
+        )
+
+        observer.observe(sectionRef.current)
+      } else {
+        setIsVisible(true)
       }
-    )
-
-    const logoAnimation = gsap.to(logoRef.current, {
-      rotation: 360,
-      duration: 8,
-      ease: "none",
-      repeat: -1
-    })
+    } catch (error) {
+      console.warn('IntersectionObserver failed, using fallback:', error)
+      setIsVisible(true)
+    }
 
     return () => {
-      tl.kill()
-      logoAnimation.kill()
+      try {
+        observer?.disconnect()
+      } catch (error) {
+        console.warn('Observer cleanup failed:', error)
+      }
+    }
+  }, [])
+
+  // Enhanced click handlers with error handling
+  const handleCTAClick = useCallback((action) => {
+    return (e) => {
+      try {
+        if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+          window.gtag('event', 'click', {
+            event_category: 'CTA',
+            event_label: `Hero ${action}`,
+            value: 1
+          })
+        }
+      } catch (error) {
+        console.warn('Analytics tracking failed:', error)
+      }
+    }
+  }, [])
+
+  const handleScrollToSection = useCallback((sectionId) => {
+    return (e) => {
+      e.preventDefault()
+      try {
+        const element = document.getElementById(sectionId)
+        if (element) {
+          requestAnimationFrame(() => {
+            element.scrollIntoView({ 
+              behavior: prefersReducedMotion ? 'auto' : 'smooth', 
+              block: 'start' 
+            })
+          })
+        }
+      } catch (error) {
+        console.warn('Scroll to section failed:', error)
+        try {
+          const element = document.getElementById(sectionId)
+          if (element) {
+            element.scrollIntoView()
+          }
+        } catch (fallbackError) {
+          console.warn('Fallback scroll failed:', fallbackError)
+        }
+      }
     }
   }, [prefersReducedMotion])
 
-  const chipItems = [
-    "CRM + Email + LinkedIn integration",
-    "custom funnel automation", 
-    "and",
-    "intelligent lead qualification"
-  ]
+  // EXACT service tags matching the design
+  const serviceTags = useMemo(() => [
+    'CRM + Email + LinkedIn integration',
+    'custom funnel automation', 
+    'intelligent lead qualification'
+  ], [])
+
+  // Safe animation classes
+  const getAnimationClass = () => {
+    if (!isVisible) return 'opacity-0 translate-y-8'
+    if (prefersReducedMotion) return 'opacity-100 translate-y-0'
+    return 'opacity-100 translate-y-0 transition-all duration-700 ease-out'
+  }
 
   return (
     <section 
-      ref={heroRef} 
-      className="relative min-h-[100dvh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-black via-gray-900 to-purple-900/20 px-4 sm:px-6 lg:px-8"
-      id="home"
+      ref={sectionRef}
+      className="relative min-h-screen text-white overflow-hidden"
+      style={{
+        background: 'linear-gradient(135deg, #1e293b 0%, #334155 25%, #475569 50%, #64748b 75%, #1e293b 100%)',
+        backgroundColor: '#1e293b'
+      }}
+      role="banner"
       aria-labelledby="hero-heading"
     >
-      <CustomCursor />
-      
-      <div className="absolute inset-0" aria-hidden="true">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-purple-900/10" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,99,255,0.08),transparent_70%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,99,120,0.03),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(99,255,120,0.03),transparent_50%)]" />
+      {/* EXACT background matching your image */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-800/90 via-slate-900/95 to-slate-800/90" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(99,255,120,0.03),transparent_50%)]"></div>
       </div>
 
-      <div className="container mx-auto text-center z-10 max-w-7xl">
-        
-        <div ref={titleRef} className="mb-6 sm:mb-8 lg:mb-12 hero-title">
-          <h1 
-            id="hero-heading"
-            className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold leading-[0.9] mb-2 sm:mb-4 lg:mb-6"
-          >
-            <span className="word inline-block">WE</span>{' '}
-            <span className="word inline-block">AUT</span>
-            <motion.span 
-              ref={logoRef}
-              className="word inline-block mx-1 sm:mx-2 lg:mx-4"
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
+        <div className={`text-center space-y-8 ${getAnimationClass()}`}>
+          
+          {/* EXACT Main Headline with rotating logo */}
+          <div className="space-y-6">
+            <h1 
+              id="hero-heading"
+              className="font-bold leading-tight tracking-tight"
+              style={{ fontSize: 'clamp(3rem, 8vw, 6rem)' }}
             >
-              <img 
-                src="/src/assets/images/logo - sentientlabs.png" 
-                alt="SentientLabs Logo" 
-                className="h-8 xs:h-10 sm:h-12 md:h-16 lg:h-20 xl:h-24 inline-block"
-                loading="eager"
-              />
-            </motion.span>
-            <span className="word inline-block">MATE.</span>
-          </h1>
-          <div className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold">
-            <span className="word inline-block text-primary bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">YOU</span>{' '}
-            <span className="word inline-block">GROW.</span>
+              {/* WE AUT[LOGO]MATE. in one line */}
+              <div className="flex items-center justify-center flex-wrap gap-2">
+                <span className="text-white">WE AUT</span>
+                <div className="inline-block mx-2">
+                  <HeroLogo />
+                </div>
+                <span className="text-white">MATE.</span>
+              </div>
+              
+              {/* YOU GROW. with purple gradient */}
+              <div className="mt-4">
+                <span 
+                  className="bg-clip-text text-transparent font-bold"
+                  style={{
+                    background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 50%, #c084fc 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent'
+                  }}
+                >
+                  YOU GROW.
+                </span>
+              </div>
+            </h1>
+          </div>
+
+          {/* EXACT Subheading */}
+          <div className="max-w-4xl mx-auto space-y-6">
+            <p className="text-2xl md:text-3xl text-gray-300 font-medium">
+              Manual lead gen is dead.
+            </p>
+            <p className="text-lg md:text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto">
+              We build intelligent automation systems that fill your pipeline while you sleep.
+            </p>
+          </div>
+
+          {/* EXACT Service tags with "and" between them */}
+          <div className="flex flex-wrap justify-center items-center gap-4 max-w-5xl mx-auto">
+            {serviceTags.map((tag, index) => (
+              <div key={index} className="flex items-center">
+                <span 
+                  className="px-4 py-2 rounded-full text-sm text-gray-300 backdrop-blur-sm border"
+                  style={{
+                    backgroundColor: 'rgba(51, 65, 85, 0.6)',
+                    borderColor: 'rgba(71, 85, 105, 0.5)'
+                  }}
+                >
+                  {tag}
+                </span>
+                {index < serviceTags.length - 1 && (
+                  <span className="mx-3 text-gray-400 text-sm">and</span>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* EXACT CTA buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center pt-8">
+            <a
+              href="mailto:hello@sentientlabs.in"
+              onClick={handleCTAClick('Get Custom Automation')}
+              className="group w-full sm:w-auto inline-flex items-center justify-center space-x-3 px-8 py-4 text-white text-lg font-bold rounded-full shadow-lg transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+              style={{
+                background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 50%, #9333ea 100%)'
+              }}
+              aria-label="Get your custom automation system"
+            >
+              <span>Get Your Custom Automation</span>
+              <ArrowRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true" />
+            </a>
+
+            <a
+              href="#process"
+              onClick={handleScrollToSection('process')}
+              className="group w-full sm:w-auto inline-flex items-center justify-center space-x-3 px-8 py-4 text-white text-lg font-bold rounded-full backdrop-blur-sm transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50"
+              style={{
+                backgroundColor: 'rgba(51, 65, 85, 0.4)',
+                border: '2px solid rgba(71, 85, 105, 0.6)'
+              }}
+              aria-label="See how our automation process works"
+            >
+              <span>See How It Works</span>
+              <ArrowRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true" />
+            </a>
+          </div>
+
+          {/* EXACT Scroll indicator */}
+          <div className="pt-16">
+            <p className="text-sm text-gray-500 mb-4">Scroll to explore</p>
+            <div className="w-6 h-10 mx-auto border-2 border-gray-600 rounded-full flex justify-center">
+              <div className={`w-1 h-3 bg-blue-400 rounded-full mt-2 ${!prefersReducedMotion ? 'animate-bounce' : ''}`} />
+            </div>
           </div>
         </div>
-
-        <motion.div 
-          className="mb-6 sm:mb-8 lg:mb-12"
-          initial={prefersReducedMotion ? {} : { opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={prefersReducedMotion ? {} : { delay: 2, duration: 1 }}
-        >
-          <p className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl mb-2 sm:mb-4 max-w-5xl mx-auto leading-relaxed text-gray-300">
-            Manual lead gen is dead.
-          </p>
-          <p className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl max-w-5xl mx-auto leading-relaxed text-gray-300">
-            We build intelligent automation systems that fill your pipeline while you sleep.
-          </p>
-        </motion.div>
-
-        <motion.div 
-          className="flex flex-wrap justify-center gap-2 sm:gap-3 lg:gap-4 mb-8 sm:mb-12 lg:mb-16 px-2"
-          initial={prefersReducedMotion ? {} : { opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={prefersReducedMotion ? {} : { delay: 2.5, duration: 1 }}
-        >
-          {chipItems.map((item, index) => (
-            <motion.span
-              key={item}
-              className={`px-3 sm:px-4 lg:px-6 py-2 sm:py-3 text-xs sm:text-sm lg:text-base font-medium transition-all duration-300 ${
-                item === 'and' 
-                  ? 'text-gray-400' 
-                  : 'border border-gray-600 rounded-full bg-white/5 backdrop-blur-sm hover:border-primary hover:bg-primary/10 hover:scale-105 shadow-lg hover:shadow-primary/20 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-900'
-              }`}
-              initial={prefersReducedMotion ? {} : { opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={prefersReducedMotion ? {} : { 
-                delay: 3 + index * 0.1,
-                duration: 0.6,
-                ease: "easeOut"
-              }}
-              whileHover={!prefersReducedMotion && item !== 'and' ? { scale: 1.05 } : {}}
-              data-cursor="pointer"
-              tabIndex={item === 'and' ? -1 : 0}
-            >
-              {item}
-            </motion.span>
-          ))}
-        </motion.div>
-
-        <motion.div
-          className="flex flex-col sm:flex-row gap-3 sm:gap-4 lg:gap-6 justify-center items-center mb-12 sm:mb-16 px-4"
-          initial={prefersReducedMotion ? {} : { opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={prefersReducedMotion ? {} : { delay: 4, duration: 1 }}
-        >
-          <motion.a
-            href="#services"
-            className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-4 sm:px-6 lg:px-8 py-3 lg:py-4 bg-gradient-to-r from-primary to-purple-600 text-white text-sm sm:text-base lg:text-lg font-semibold rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/40 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-900"
-            whileHover={prefersReducedMotion ? {} : { scale: 1.05, y: -2 }}
-            whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
-            data-cursor="pointer"
-          >
-            <span>Get Your Custom Automation</span>
-            <motion.span
-              animate={prefersReducedMotion ? {} : { x: [0, 5, 0] }}
-              transition={prefersReducedMotion ? {} : { repeat: Infinity, duration: 1.5 }}
-              aria-hidden="true"
-            >
-              →
-            </motion.span>
-          </motion.a>
-
-          <motion.a
-            href="#process"
-            className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-4 sm:px-6 lg:px-8 py-3 lg:py-4 border border-gray-600 text-white text-sm sm:text-base lg:text-lg font-semibold rounded-xl bg-white/5 backdrop-blur-sm hover:border-primary hover:bg-primary/10 transition-all duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-offset-2 focus:ring-offset-gray-900"
-            whileHover={prefersReducedMotion ? {} : { scale: 1.05, y: -2 }}
-            whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
-            data-cursor="pointer"
-          >
-            <span>See How It Works</span>
-            <motion.span
-              animate={prefersReducedMotion ? {} : { x: [0, 5, 0] }}
-              transition={prefersReducedMotion ? {} : { repeat: Infinity, duration: 1.5, delay: 0.2 }}
-              aria-hidden="true"
-            >
-              →
-            </motion.span>
-          </motion.a>
-        </motion.div>
-
-        <motion.div
-          className="absolute bottom-4 sm:bottom-6 lg:bottom-8 left-1/2 transform -translate-x-1/2"
-          initial={prefersReducedMotion ? {} : { opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={prefersReducedMotion ? {} : { delay: 5 }}
-        >
-          <motion.div
-            className="flex flex-col items-center space-y-1 sm:space-y-2"
-            animate={prefersReducedMotion ? {} : { y: [0, 8, 0] }}
-            transition={prefersReducedMotion ? {} : { repeat: Infinity, duration: 2 }}
-          >
-            <span className="text-xs sm:text-sm text-gray-400 font-medium">Scroll to explore</span>
-            <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-gray-400" aria-hidden="true" />
-          </motion.div>
-        </motion.div>
       </div>
     </section>
   )
