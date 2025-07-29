@@ -2,7 +2,7 @@
 
 A high-performance, modern React website for SentientLabs—the next-generation lead generation agency specializing in AI-powered automation and scalable growth solutions.
 
-## 1.About SentientLabs
+# 1.About SentientLabs
 SentientLabs delivers cutting-edge lead generation services with blazing-fast performance, intelligent automation, and data-driven results. Our platform combines advanced AI technology with proven marketing strategies to help agencies and businesses scale efficiently.
 
 ## Key Offerings:
