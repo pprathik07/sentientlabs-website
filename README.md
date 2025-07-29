@@ -15,21 +15,32 @@ Data-driven growth solutions for SMBs
 ## 2. Tech Stack
 
 React 18 – Modern component architecture
+
 Vite – Lightning-fast build tooling
+
 Tailwind CSS – Utility-first responsive design
+
 Framer Motion – Smooth animations and transitions
+
 Lucide React – Consistent icon library
+
 GSAP – Advanced scroll-triggered animations
+
 Critical CSS Optimization – Sub-second load times
 
 
 ## 3. Performance Metrics
 
 Lighthouse Score: 97/100 (Desktop)
+
 Mobile Score: 70/100 (Above industry average)
+
 LCP: 0.8s – Largest Contentful Paint
+
 FCP: 0.6s – First Contentful Paint
+
 CLS: 0 – Perfect layout stability
+
 Speed Index: 1.4s – Visual completeness
 
 
